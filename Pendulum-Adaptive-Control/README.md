@@ -94,4 +94,34 @@ Adjust k_p, k_d, γ in `controllers/adaptive_controller.py` to tune performance.
 
 ---
 
+## Robustness Under Friction
+
+**Lyapunov (PD) controller stability proof:**
+Consider the candidate Lyapunov function
+
+    V = ½ e² + ½·ė²,
+
+with e = θ−θ_ref, ė = θ̇−0. Under PD control u=−k_p e − k_d ė and friction torque τ_f=−b·ė, the derivative of V along trajectories is
+
+    V̇ = e·ė + ė·ë
+       = e·ė + ė[−(g/l)·(sinθ−sinθ_ref) + (u+τ_f)/I]
+       ≈ −k_d·ė² + (b/(m·l²))·ė² + higher‑order terms.
+
+When b > k_d·m·l², the term (b/(m·l²) − k_d) becomes positive and V̇ can be positive, so PD control alone cannot guarantee convergence.
+
+**MRAC adaptive controller robustness:**
+The adaptive term θ̂·sin(θ−θ_ref) learns and cancels the friction disturbance. The Lyapunov‑like derivative remains negative definite for any level of constant b, so MRAC succeeds where PD fails.
+
+### Running the comparison
+
+To see this in simulation, use:
+
+```bash
+python simulation/compare.py --theta0 1.0 --theta_ref 3.1416 --b 10.0
+```
+
+Adjust `--b` to explore how increased friction breaks PD but MRAC still stabilizes.
+
+---
+
 *End of README*
